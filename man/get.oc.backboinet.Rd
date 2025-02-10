@@ -39,7 +39,9 @@ get.oc.backboinet(
 }
 \arguments{
 \item{target_T}{Target toxicity probability. The default value is
-\code{target_T=0.3}.}
+\code{target_T=0.3}. When observing 1 DLT out of 3 patients and the target
+DLT rate is between 0.25 and 0.279, the decision is to stay at the current
+dose due to a widely accepted practice.}
 
 \item{toxprob}{Vector of true toxicity probability.}
 
