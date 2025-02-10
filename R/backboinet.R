@@ -5,7 +5,9 @@
 #' optimization within fixed scenarios
 #'
 #' @param target_T Target toxicity probability. The default value is
-#' \code{target_T=0.3}.
+#' \code{target_T=0.3}. When observing 1 DLT out of 3 patients and the target
+#' DLT rate is between 0.25 and 0.279, the decision is to stay at the current
+#' dose due to a widely accepted practice. 
 #' @param toxprob Vector of true toxicity probability.
 #' @param target_E The minimum required efficacy probability. The default value
 #' is \code{target_E=0.25}.
@@ -498,7 +500,7 @@ for(simu in 1:n.sim){
 
                 obs.eff[ds]   <- bx.ORR
                 obs.eff.n[ds] <- bn.ORR
-                pe[ds]        <- bx.ORR/n.ORR
+                pe[ds]        <- bx.ORR/bn.ORR
 
                 titeb.curdose <- titeb.df[titeb.df$dose==ds,]
                 bgamma.T <- as.numeric(titeb.curdose$endtox<=q)
