@@ -1,6 +1,6 @@
-16304f05303fb7386275544966eab434 *DESCRIPTION
+146a32bfbb997186df48460d3241edf3 *DESCRIPTION
 7a7f8ca4b712694254b1c7b0772eb7fd *NAMESPACE
-993a35c1a556d9256526b41948a912bb *R/backboinet.R
-53b9058a0c13f510ac7c5fc44489f4ea *R/backboinetr.R
-fbd27134adb68c6827dc7580480961da *man/get.oc.backboinet.Rd
-1c0fc41a24af8c8d6c0ea8ef503309c8 *man/get.oc.backboinetr.Rd
+773c17f60d5eb90297a105ec8c57b0ec *R/backboinet.R
+826a1370f8b16253f940949fdb13ff5e *R/backboinetr.R
+b91ff81f95d08a4183f2569728e2db27 *man/get.oc.backboinet.Rd
+231b3d837dc2c4fe74d7cd83e6eb4cf9 *man/get.oc.backboinetr.Rd
