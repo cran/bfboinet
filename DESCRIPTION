@@ -2,7 +2,7 @@ Package: bfboinet
 Type: Package
 Title: Backfill Bayesian Optimal Interval Design Using Efficacy and
         Toxicity
-Version: 0.2.0
+Version: 0.4.0
 Authors@R: c(
     person("Jing", "Zhu", email = "zhujing716@gmail.com", role = c("cre","aut")),
     person("Kentaro", "Takeda", email = "kentaro.takeda.statistics@gmail.com", role = "aut"))
@@ -17,9 +17,9 @@ Encoding: UTF-8
 RoxygenNote: 7.3.2
 Imports: Iso, copula, dplyr, tidyselect, magrittr
 NeedsCompilation: no
-Packaged: 2025-02-10 03:28:52 UTC; A4021579
+Packaged: 2025-06-03 09:15:50 UTC; A4021579
 Author: Jing Zhu [cre, aut],
   Kentaro Takeda [aut]
 Maintainer: Jing Zhu <zhujing716@gmail.com>
 Repository: CRAN
-Date/Publication: 2025-02-10 04:10:02 UTC
+Date/Publication: 2025-06-03 09:50:02 UTC

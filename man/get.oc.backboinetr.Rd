@@ -24,7 +24,7 @@ get.oc.backboinetr(
   gen.event.time = "weibull",
   accrual,
   gen.enroll.time = "uniform",
-  n.earlystop = 6,
+  n.elimination = 6,
   stopping.npts = 12,
   suspend = 0,
   stopping.prob.T = 0.95,
@@ -100,10 +100,11 @@ distribution is used when
 \code{gen.enroll.time="exponential"}. The default
 value is \code{gen.enroll.time="uniform"}.}
 
-\item{n.earlystop}{the early stopping parameter. If the number of patients
-treated at the current dose reaches \code{n.earlystop},stop the trial and
-select the optimal dose (OD) based on the observed data.The default value is
-\code{n.earlystop=6}.}
+\item{n.elimination}{a minimum sample size for dose elimination. If the number
+of patients treated at the current dose reaches \code{n.elimination} and meet 
+elimination dose level criteria, eliminate current dose level and higher doses 
+when meet toxicity criteria and eliminate current dose level when meet efficacy
+criteria. The default value is \code{n.elimination=6}.}
 
 \item{stopping.npts}{Early study termination criteria for the number of
 patients in the dose-escalation and backfill cohorts. If the number of
@@ -173,6 +174,21 @@ random scenarios.}
 allocation for the dose-escalation cohort until sufficient toxicity
 information is available.}
 \item{accrual}{Accrual rate (months) (patient accrual rate per month).}
+\item{n.patient}{Average number of patients who were treated at each dose
+level in dose-esclation and backfill cohorts}
+\item{n.bpatient}{Average number of back filled patients who were treated
+at each dose level}
+\item{n.tox.patient}{Average number of patients who experienced toxicity at 
+each dose level in dose-esclation and backfill cohorts}
+\item{n.eff.patient}{Average number of patients who experienced efficacy at 
+each dose level in dose-esclation and backfill cohorts}
+\item{n.tox.bpatient}{Average number of patients who experienced toxicity at 
+each dose level in backfill cohort}
+\item{n.eff.bpatient}{Average number of patients who experienced efficacy at 
+each dose level in backfill cohort}
+\item{prop.select}{Percentage of times that each dose level was selected as
+optimal biological dose.}
+\item{prop.stop}{Percentage of times that the study was terminated.} 
 \item{duration}{Expected study duration (months)}
 \item{totaln}{Total patients}
 \item{data.obs.n}{Record the number of patients in each dose level within the
@@ -213,7 +229,7 @@ get.oc.backboinetr(target_T=target_T,target_Tr=0.359,target_E=target_E,
 target_Er=0.197,n.dose=5,startdose=1,ncohort=10,cohortsize=3,
 pT.saf=0.6 * target_T,pT.tox = 1.4 * target_T,pE.saf = 0.6 * target_E,
 alpha.T1=0.5,alpha.E1=0.5,tau.T=1,tau.E=1,te.corr=0.2,
-gen.event.time="weibull",accrual=3,gen.enroll.time="uniform",n.earlystop=6,
+gen.event.time="weibull",accrual=3,gen.enroll.time="uniform",n.elimination=6,
 stopping.npts=12,suspend=0,stopping.prob.T=0.95,stopping.prob.E=0.90,
 ppsi01=0,ppsi00=40,ppsi11=60,ppsi10=100,n.sim=2,seed.sim=30)
 

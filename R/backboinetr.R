@@ -47,10 +47,11 @@
 #' \code{gen.enroll.time="uniform"}. Exponential distribution is used when
 #' \code{gen.enroll.time="exponential"}. The default
 #' value is \code{gen.enroll.time="uniform"}.
-#' @param n.earlystop the early stopping parameter. If the number of patients
-#' treated at the current dose reaches \code{n.earlystop},stop the trial and
-#' select the optimal dose (OD) based on the observed data.The default value is
-#' \code{n.earlystop=6}.
+#' @param n.elimination a minimum sample size for dose elimination. If the number
+#' of patients treated at the current dose reaches \code{n.elimination} and meet 
+#' elimination dose level criteria, eliminate current dose level and higher doses 
+#' when meet toxicity criteria and eliminate current dose level when meet efficacy
+#' criteria. The default value is \code{n.elimination=6}.
 #' @param stopping.npts Early study termination criteria for the number of
 #' patients in the dose-escalation and backfill cohorts. If the number of
 #' patients at the current dose reaches this criteria and the same dose level
@@ -118,6 +119,21 @@
 #' allocation for the dose-escalation cohort until sufficient toxicity
 #' information is available.}
 #' \item{accrual}{Accrual rate (months) (patient accrual rate per month).}
+#' \item{n.patient}{Average number of patients who were treated at each dose
+#' level in dose-esclation and backfill cohorts}
+#' \item{n.bpatient}{Average number of back filled patients who were treated
+#' at each dose level}
+#' \item{n.tox.patient}{Average number of patients who experienced toxicity at 
+#' each dose level in dose-esclation and backfill cohorts}
+#' \item{n.eff.patient}{Average number of patients who experienced efficacy at 
+#' each dose level in dose-esclation and backfill cohorts}
+#' \item{n.tox.bpatient}{Average number of patients who experienced toxicity at 
+#' each dose level in backfill cohort}
+#' \item{n.eff.bpatient}{Average number of patients who experienced efficacy at 
+#' each dose level in backfill cohort}
+#' \item{prop.select}{Percentage of times that each dose level was selected as
+#' optimal biological dose.}
+#' \item{prop.stop}{Percentage of times that the study was terminated.} 
 #' \item{duration}{Expected study duration (months)}
 #' \item{totaln}{Total patients}
 #' \item{data.obs.n}{Record the number of patients in each dose level within the
@@ -144,7 +160,7 @@
 #' target_Er=0.197,n.dose=5,startdose=1,ncohort=10,cohortsize=3,
 #' pT.saf=0.6 * target_T,pT.tox = 1.4 * target_T,pE.saf = 0.6 * target_E,
 #' alpha.T1=0.5,alpha.E1=0.5,tau.T=1,tau.E=1,te.corr=0.2,
-#' gen.event.time="weibull",accrual=3,gen.enroll.time="uniform",n.earlystop=6,
+#' gen.event.time="weibull",accrual=3,gen.enroll.time="uniform",n.elimination=6,
 #' stopping.npts=12,suspend=0,stopping.prob.T=0.95,stopping.prob.E=0.90,
 #' ppsi01=0,ppsi00=40,ppsi11=60,ppsi10=100,n.sim=2,seed.sim=30)
 #'
@@ -156,7 +172,7 @@
 get.oc.backboinetr <- function (target_T=0.3,target_Tr=0.359,target_E=0.25,target_Er=0.197,n.dose,startdose,ncohort,cohortsize,
                                pT.saf=0.6 * target_T,pT.tox = 1.4 * target_T,pE.saf = 0.6 * target_E,
                                alpha.T1=0.5,alpha.E1=0.5,tau.T,tau.E,te.corr=0.2,gen.event.time="weibull",
-                               accrual,gen.enroll.time="uniform",n.earlystop=6,stopping.npts=12,
+                               accrual,gen.enroll.time="uniform",n.elimination=6,stopping.npts=12,
                                suspend=0,stopping.prob.T=0.95,stopping.prob.E=0.90,ppsi01=0,ppsi00=40,ppsi11=60,
                                ppsi10=100,n.sim=10000,seed.sim=30){
 
@@ -359,6 +375,10 @@ get.oc.backboinetr <- function (target_T=0.3,target_Tr=0.359,target_E=0.25,targe
 
   toxicity=matrix(nrow=an.sim,ncol=n.dose)
   efficacy=matrix(nrow=an.sim,ncol=n.dose)
+  
+  btoxicity=matrix(nrow=an.sim,ncol=n.dose)
+  befficacy=matrix(nrow=an.sim,ncol=n.dose)
+  
 
   prop.select <- array(0,dim=c(an.sim,n.dose))
   prop.stop <- array(0,dim=c(an.sim))
@@ -444,6 +464,9 @@ get.oc.backboinetr <- function (target_T=0.3,target_Tr=0.359,target_E=0.25,targe
     pe        <- numeric(n.dose)
     pt        <- numeric(n.dose)
 
+    obs.btox   <- numeric(n.dose)
+    obs.beff   <- numeric(n.dose)
+    
     dose.curr <- startdose
 
     bgamma  <- numeric(n.dose)
@@ -722,8 +745,9 @@ get.oc.backboinetr <- function (target_T=0.3,target_Tr=0.359,target_E=0.25,targe
                                   endtox = localt.enter+apply(as.matrix(1:cohortsize),1,function(x){min(time.te[x,1],tau.T)}),
                                   dlt    = localt.yT,
                                   endeff = localt.enter+apply(as.matrix(1:cohortsize),1,function(x){min(time.te[x,2],tau.E)}),
-                                  orr    = localt.yE))
-
+                                  orr    = localt.yE,
+                                  backfill = rep(0,cohortsize)))
+      
       if(!is.null(localt.enterb)){
         tite.df <- rbind(tite.df,
                          data.frame(dose   = db,
@@ -731,7 +755,8 @@ get.oc.backboinetr <- function (target_T=0.3,target_Tr=0.359,target_E=0.25,targe
                                     endtox = localt.enterb+apply(as.matrix(1:length(localt.enterb)),1,function(x){min(time.teba[x,1],tau.T)}),
                                     dlt    = localt.yTb,
                                     endeff = localt.enterb+apply(as.matrix(1:length(localt.enterb)),1,function(x){min(time.teba[x,2],tau.E)}),
-                                    orr    = localt.yEb))
+                                    orr    = localt.yEb,
+                                    backfill = rep(1,length(localt.enterb))))
       }
 
       tite.curdose <- tite.df[tite.df$dose==dose.curr,]
@@ -762,6 +787,12 @@ get.oc.backboinetr <- function (target_T=0.3,target_Tr=0.359,target_E=0.25,targe
           obs.eff[ds]   <- x.ORR
           obs.eff.n[ds] <- n.ORR
           pe[ds]        <- x.ORR/n.ORR
+          
+          #####create two paramters for -	Average number of patients who experienced toxicity/efficacy at each dose level in backfill cohort####;
+          x.bDLT  <- sum(compsub.T[compsub.T$backfill==1,]$dlt)
+          x.bORR  <- sum(compsub.E[compsub.E$backfill==1,]$orr)
+          obs.btox[ds]   <- x.bDLT
+          obs.beff[ds]   <- x.bORR
 
         }}
 
@@ -835,11 +866,11 @@ get.oc.backboinetr <- function (target_T=0.3,target_Tr=0.359,target_E=0.25,targe
 
       ###determine which dose level should be eliminated
 
-      if(length(which((tterm<(1-stopping.prob.T))&(nvector>=n.earlystop)))>0){
-        elimi_tox[(min(which((tterm<(1-stopping.prob.T))&(nvector>=n.earlystop)))):n.dose]<-1
+      if(length(which((tterm<(1-stopping.prob.T))&(nvector>=n.elimination)))>0){
+        elimi_tox[(min(which((tterm<(1-stopping.prob.T))&(nvector>=n.elimination)))):n.dose]<-1
       }
-      if(length(which((eterm<(1-stopping.prob.E))&(nvector>=n.earlystop)))>0){
-        elimi_eff[which((eterm<(1-stopping.prob.E))&(nvector>=n.earlystop))]<-1
+      if(length(which((eterm<(1-stopping.prob.E))&(nvector>=n.elimination)))>0){
+        elimi_eff[which((eterm<(1-stopping.prob.E))&(nvector>=n.elimination))]<-1
       }
 
       elimi<-elimi_tox+elimi_eff
@@ -908,6 +939,10 @@ get.oc.backboinetr <- function (target_T=0.3,target_Tr=0.359,target_E=0.25,targe
 
     efficacy[simu,]=obs.eff
     toxicity[simu,]=obs.tox
+    
+    befficacy[simu,]=obs.beff
+    btoxicity[simu,]=obs.btox
+    
 
     backfilltimes[simu]=backfill
     backfillcount[simu,]=backfillvector
@@ -968,6 +1003,18 @@ get.oc.backboinetr <- function (target_T=0.3,target_Tr=0.359,target_E=0.25,targe
 
   n.bpatient <- round(apply(backfillcount,2,mean),digits=2)
   names(n.bpatient) <- dose
+  
+  n.tox.patient <- round(apply(toxicity,2,mean),digits=2)
+  names(n.tox.patient) <- dose
+  
+  n.eff.patient <- round(apply(efficacy,2,mean),digits=2)
+  names(n.eff.patient) <- dose 
+  
+  n.tox.bpatient <- round(apply(btoxicity,2,mean),digits=2)
+  names(n.tox.bpatient) <- dose
+  
+  n.eff.bpatient <- round(apply(befficacy,2,mean),digits=2)
+  names(n.eff.bpatient) <- dose   
 
   names(toxprob)      <- dose
   names(effprob)      <- dose
@@ -1041,6 +1088,14 @@ get.oc.backboinetr <- function (target_T=0.3,target_Tr=0.359,target_E=0.25,targe
                  tau.E        = tau.E,
                  suspend      = suspend,
                  accrual      = accrual,
+                 n.patient    = n.patient,
+                 n.bpatient   = n.bpatient,
+                 n.tox.patient= n.tox.patient,
+                 n.eff.patient= n.eff.patient,
+                 n.tox.bpatient= n.tox.bpatient,
+                 n.eff.bpatient= n.eff.bpatient,
+                 prop.select  = prop.select,
+                 prop.stop    = prop.stop,
                  duration     = duration,
                  totaln       = totaln,
                  data.obs.n   = data.obs.n,
